@@ -1,12 +1,13 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include "utils.h"
 
 const char* ssid = "Sugat 5G";
 const char* password = "Sugat.dev";
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
-char incomingPacket[5];  // buffer for incoming packets
+ControlPacket incomingPacket;  // buffer for incoming packets
 
 void setup()
 {
@@ -47,17 +48,22 @@ void loop()
   {
     // receive incoming UDP packets
     Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-    int len = Udp.read(incomingPacket, 5);
-    if (len > 0)
+    int len = Udp.read(incomingPacket.buffer, 5);
+    if (len > 0 && validate_packet(&incomingPacket))
     {
-      incomingPacket[len] = 0;
-      handle_packet(incomingPacket);
+      // incommingPacket.buffer[4] = '\0'
+      handle_packet(&incomingPacket.data);
     }
-    Serial.printf("UDP packet contents: %s\n", incomingPacket);
+    Serial.printf("UDP packet contents: %s\n", incomingPacket.buffer);
   }
   else
   {
     handle_no_packet();
   }
+}
+
+bool validate_packet(ControlPacket* p) {
+  int sum = p->data.forward + p->data.turn + p->data.speed + p->data.flags;
+  return (sum & 0xFF) == p->data.checksum;
 }
 

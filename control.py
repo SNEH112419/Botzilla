@@ -34,6 +34,20 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
+
+    forward = 0
+    turn = 0
+
+    if keys[pygame.K_w]:
+        forward = 127
+    elif keys[pygame.K_s]:
+        forward = -127
+
+    if keys[pygame.K_a]:
+        turn = -127
+    elif keys[pygame.K_d]:
+        turn = 127
+
     payload = b""
     if keys[pygame.K_w]:
         payload = b'f'
