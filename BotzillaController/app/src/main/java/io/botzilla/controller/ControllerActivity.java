@@ -1,0 +1,102 @@
+package io.botzilla.controller;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.yoimerdr.android.virtualjoystick.geometry.position.ImmutablePosition;
+import com.yoimerdr.android.virtualjoystick.views.JoystickView;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+
+import io.botzilla.controller.data.ControlPacket;
+
+public class ControllerActivity extends AppCompatActivity {
+
+    private static final String TAG = "ControllerActivity";
+    private JoystickView joystick;
+    private DatagramSocket udpSocket;
+    private InetAddress botzillaIP;
+    private volatile boolean running = true;
+    private Thread controlThread;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_controller);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
+        Intent intent = getIntent();
+        String ip = intent.getStringExtra("IP");
+        ((TextView) findViewById(R.id.ipTextView)).setText(ip);
+
+        try {
+            udpSocket = new DatagramSocket();
+            botzillaIP = InetAddress.getByName(ip);
+        } catch (SocketException | UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+
+        joystick = findViewById(R.id.vJoystick);
+
+        startControlLoop();
+    }
+
+    private void startControlLoop() {
+        controlThread = new Thread(() -> {
+            try {
+                while (running) {
+                    sendControlPacket();
+                    Thread.sleep(0, 100); // 50 Hz update rate (20 ms per frame)
+                }
+            } catch (InterruptedException e) {
+                Log.d(TAG, "Control thread interrupted");
+            }
+        });
+        controlThread.start();
+    }
+
+    private void sendControlPacket() {
+        ImmutablePosition pos = joystick.getNdcPosition();
+        byte forward = (byte) (-127 * pos.getY());
+        byte turn = (byte) (127 * pos.getX());
+        byte[] buffer = new ControlPacket(forward, turn, (byte) 0xFF, (byte) 0).getBytes();
+
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);
+        try {
+            udpSocket.send(packet);
+        } catch (IOException e) {
+            Log.e(TAG, "UDP send failed", e);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        running = false;
+        if (controlThread != null) {
+            controlThread.interrupt();
+        }
+        if (udpSocket != null) {
+            udpSocket.close();
+        }
+    }
+}
