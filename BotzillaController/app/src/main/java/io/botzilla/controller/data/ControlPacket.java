@@ -1,10 +1,10 @@
 package io.botzilla.controller.data;
 
 public class ControlPacket {
-    byte forward;
-    byte turn;
-    byte speed; // has to be from 0 to 255
-    byte flags = 0x0; // unsigned
+    public byte forward;
+    public byte turn;
+    public byte speed; // has to be from 0 to 255
+    public byte flags = 0x0; // unsigned
     // byte checksum; // and all and
 
     public ControlPacket(byte forward, byte turn, int speed, byte flags) {

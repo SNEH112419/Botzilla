@@ -3,6 +3,7 @@ package io.botzilla.controller;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -23,7 +24,7 @@ import java.net.UnknownHostException;
 
 import io.botzilla.controller.data.ControlPacket;
 
-public class ControllerActivity extends AppCompatActivity {
+public class ControllerActivityJoystick extends AppCompatActivity {
 
     private static final String TAG = "ControllerActivity";
     private JoystickView joystick;
@@ -31,6 +32,8 @@ public class ControllerActivity extends AppCompatActivity {
     private InetAddress botzillaIP;
     private volatile boolean running = true;
     private Thread controlThread;
+
+    private ControlPacket dataPacket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +58,28 @@ public class ControllerActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
+        dataPacket = new ControlPacket((byte) 0, (byte) 0, (byte) 0xFF, (byte) 0);
+
         joystick = findViewById(R.id.vJoystick);
+        SeekBar speed = findViewById(R.id.speed_seek);
+        speed.setMax(255);
+        speed.setProgress(255);
+        speed.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.speed = (byte) (progress & 0xFF);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
 
         startControlLoop();
     }
@@ -78,7 +102,9 @@ public class ControllerActivity extends AppCompatActivity {
         ImmutablePosition pos = joystick.getNdcPosition();
         byte forward = (byte) (-127 * pos.getY());
         byte turn = (byte) (127 * pos.getX());
-        byte[] buffer = new ControlPacket(forward, turn, (byte) 0xFF, (byte) 0).getBytes();
+        dataPacket.forward = forward;
+        dataPacket.turn = turn;
+        byte[] buffer = dataPacket.getBytes();
 
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);
         try {

@@ -13,9 +13,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,39 +31,48 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        this.startButton = findViewById(R.id.startButton);
         this.ipTextEdit = findViewById(R.id.ipTextEdit);
 
-        this.startButton.setOnClickListener(v -> {
-            String ip = ipTextEdit.getText().toString().trim();
+        Button startJ = findViewById(R.id.startButtonJoystick);
+        startJ.setOnClickListener(v -> {
+            startControllingActivity(ControllerActivityJoystick.class);
+        });
 
-            if (!isValidIP(ip)) {
-                Toast.makeText(this, "Invalid IP address", Toast.LENGTH_SHORT).show();
-                return;
+        Button startB = findViewById(R.id.startButtonButtons);
+        startB.setOnClickListener(v -> {
+            startControllingActivity(ControllerActivityButtons.class);
+        });
+    }
+
+    private void startControllingActivity(Class<?> cls) {
+        String ip = ipTextEdit.getText().toString().trim();
+
+        if (!isValidIP(ip)) {
+            Toast.makeText(this, "Invalid IP address", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Check reachability in background
+        Toast.makeText(this, "Checking " + ip, Toast.LENGTH_SHORT).show();
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                InetAddress inet = InetAddress.getByName(ip);
+                boolean reachable = inet.isReachable(2000); // timeout 2 sec
+
+                runOnUiThread(() -> {
+                    if (reachable) {
+                        Log.d("MAIN_ACTIVITY", "IP reachable: " + ip);
+                        Intent controlActivityIntent = new Intent(this, cls);
+                        controlActivityIntent.putExtra("IP", ip);
+
+                        startActivity(controlActivityIntent);
+                    } else {
+                        Toast.makeText(this, "IP not reachable", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-
-            // Check reachability in background
-            Toast.makeText(this, "Checking " + ip, Toast.LENGTH_SHORT);
-            Executors.newSingleThreadExecutor().execute(() -> {
-                try {
-                    InetAddress inet = InetAddress.getByName(ip);
-                    boolean reachable = inet.isReachable(2000); // timeout 2 sec
-
-                    runOnUiThread(() -> {
-                        if (reachable) {
-                            Log.d("MAIN_ACTIVITY", "IP reachable: " + ip);
-                            Intent controlActivityIntent = new Intent(this, ControllerActivity.class);
-                            controlActivityIntent.putExtra("IP", ip);
-
-                            startActivity(controlActivityIntent);
-                        } else {
-                            Toast.makeText(this, "IP not reachable", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
         });
     }
 

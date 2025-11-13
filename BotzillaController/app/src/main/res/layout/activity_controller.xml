@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ControllerActivity">
+    tools:context=".ControllerActivityJoystick">
 
     <com.yoimerdr.android.virtualjoystick.views.JoystickView
         android:id="@+id/vJoystick"
@@ -13,9 +13,10 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginBottom="30dp"
+        app:background="@drawable/modern"
         app:arcControlDrawer_sweepAngle="100"
-        app:controlDrawer_accentColor="#FFFFFF"
-        app:controlDrawer_primaryColor="#FF0000"
+        app:controlDrawer_accentColor="@color/material_dynamic_neutral_variant20"
+        app:controlDrawer_primaryColor="@color/material_dynamic_primary60"
         app:controlType="circle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -29,6 +30,30 @@
         android:text="IP Address"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <SeekBar
+        android:id="@+id/speed_seek"
+        android:layout_width="320dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="20dp"
+        android:progress="100"
+        android:progressTint="@color/material_dynamic_primary60"
+        android:thumbTint="@color/material_dynamic_primary60"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="60dp"
+        android:layout_height="30dp"
+        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        android:text="@string/speed_hard_coded"
+        app:layout_constraintBottom_toBottomOf="@+id/speed_seek"
+        app:layout_constraintEnd_toStartOf="@+id/speed_seek"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
