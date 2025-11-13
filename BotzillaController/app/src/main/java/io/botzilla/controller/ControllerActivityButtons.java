@@ -33,6 +33,8 @@ public class ControllerActivityButtons extends AppCompatActivity {
     private DatagramSocket udpSocket;
     private InetAddress botzillaIP;
     private volatile boolean running = true;
+    private volatile boolean isActive = false;
+
     private Thread controlThread;
     private ControlPacket dataPacket;
 
@@ -67,9 +69,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = 127;
+                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
+                    isActive = false;
                     return true;
             }
             return false;
@@ -80,9 +84,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = -127;
+                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
+                    isActive = false;
                     return true;
             }
             return false;
@@ -93,9 +99,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = 127;
+                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
+                    isActive = false;
                     return true;
             }
             return false;
@@ -106,9 +114,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = -127;
+                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
+                    isActive = false;
                     return true;
             }
             return false;
@@ -141,10 +151,8 @@ public class ControllerActivityButtons extends AppCompatActivity {
         controlThread = new Thread(() -> {
             try {
                 while (running) {
-                     sendControlPacket();
-//                    Log.d(TAG, "startControlLoop: " + String.format("%d %d %d %d",
-//                            dataPacket.forward, dataPacket.turn,
-//                            dataPacket.speed, dataPacket.flags));
+                    if (isActive) sendControlPacket();
+
                     Thread.sleep(1000/120);
                 }
             } catch (InterruptedException e) {
