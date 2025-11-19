@@ -49,7 +49,7 @@ public class ControllerActivityJoystick extends AppCompatActivity {
 
         Intent intent = getIntent();
         String ip = intent.getStringExtra("IP");
-        ((TextView) findViewById(R.id.ipTextView)).setText(ip);
+        ((TextView) findViewById(R.id.ipTextViewB)).setText(ip);
 
         try {
             udpSocket = new DatagramSocket();

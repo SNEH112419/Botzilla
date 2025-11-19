@@ -7,16 +7,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import com.yoimerdr.android.virtualjoystick.geometry.position.ImmutablePosition;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -33,11 +31,24 @@ public class ControllerActivityButtons extends AppCompatActivity {
     private DatagramSocket udpSocket;
     private InetAddress botzillaIP;
     private volatile boolean running = true;
-    private volatile boolean isActive = false;
 
     private Thread controlThread;
     private ControlPacket dataPacket;
 
+
+
+    // UI elements
+    Switch servoSyncSwitch;
+    SeekBar elevation_seek;
+    SeekBar seek_grip_l;
+    SeekBar right_grip;
+    TextView left_seek_text;
+    TextView right_seek_text;
+
+
+
+    int left_grip_val;
+    int right_grip_val;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,7 +62,7 @@ public class ControllerActivityButtons extends AppCompatActivity {
 
          Intent intent = getIntent();
          String ip = intent.getStringExtra("IP");
-         ((TextView) findViewById(R.id.ipTextView)).setText(ip);
+         ((TextView) findViewById(R.id.ipTextViewB)).setText(ip);
 
         try {
             udpSocket = new DatagramSocket();
@@ -69,12 +80,9 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = 127;
-                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
-                    isActive = false;
-                    return true;
             }
             return false;
         });
@@ -84,11 +92,9 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = -127;
-                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
-                    isActive = false;
                     return true;
             }
             return false;
@@ -99,11 +105,9 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = 127;
-                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
-                    isActive = false;
                     return true;
             }
             return false;
@@ -114,11 +118,9 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = -127;
-                    isActive = true;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
-                    isActive = false;
                     return true;
             }
             return false;
@@ -134,37 +136,100 @@ public class ControllerActivityButtons extends AppCompatActivity {
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
+            public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
 
+        servoSyncSwitch = findViewById(R.id.servoSyncSwitch);
+
+        elevation_seek = findViewById(R.id.elevation_seek);
+        seek_grip_l = findViewById(R.id.grip_seek);
+        right_grip = findViewById(R.id.grip_seek_2_hidden);
+
+        left_seek_text = findViewById(R.id.gripper_seek_textView);
+        right_seek_text = findViewById(R.id.gripper_seek_textView_r);
+
+        elevation_seek.setMax(120);
+        elevation_seek.setProgress(0);
+        elevation_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.elevation = (byte) (progress & 0xFF);
             }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        servoSyncSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
+            updateUI(isChecked);
+        });
+
+        seek_grip_l.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (servoSyncSwitch.isChecked()) {
+                    left_grip_val = progress;
+                    right_grip_val = 180 - progress;
+                }
+                else {
+                    left_grip_val = progress;
+                }
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
+
+        right_grip.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                right_grip_val = 180 - progress;
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
         });
 
         startControlLoop();
+    }
+
+    void updateUI(boolean syncServos) {
+        if (syncServos) {
+            left_seek_text.setText("Grip");
+            right_seek_text.setVisibility(View.INVISIBLE);
+            right_grip.setVisibility(View.INVISIBLE);
+        }
+        else {
+            left_seek_text.setText("Left");
+            right_seek_text.setVisibility(View.VISIBLE);
+            right_grip.setVisibility(View.VISIBLE);
+        }
     }
 
     private void startControlLoop() {
         controlThread = new Thread(() -> {
             try {
                 while (running) {
-                    if (isActive) sendControlPacket();
-
+                    sendControlPacket();
                     Thread.sleep(1000/120);
                 }
             } catch (InterruptedException e) {
-                Log.d(TAG, "Control thread interrupted");
+                Log.e(TAG, "Control thread interrupted", e);
             }
         });
         controlThread.start();
     }
 
     private void sendControlPacket() {
-        byte[] buffer = dataPacket.getBytes();
+        dataPacket.left = (byte) (left_grip_val & 0xFF);
+        dataPacket.right = (byte) (right_grip_val& 0xFF);
 
+        byte[] buffer = dataPacket.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);
         try {
             udpSocket.send(packet);

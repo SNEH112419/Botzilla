@@ -17,7 +17,7 @@
         >
         <activity
             android:name=".ControllerActivityButtons"
-            android:exported="true"
+            android:exported="false"
             android:screenOrientation="sensorLandscape" />
         <activity
             android:name=".ControllerActivityJoystick"

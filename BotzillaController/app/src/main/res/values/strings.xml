@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Botzilla Controller</string>
     <string name="speed_hard_coded">Speed</string>
+    <string name="motor_selection_place_holder">Servo Sync</string>
 </resources>
