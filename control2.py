@@ -77,8 +77,7 @@ while running:
     screen.blit(font.render("Press W/A/S/D to move, ESC to quit.", True, (230,230,230)), (10, 10))
     screen.blit(font.render(status, True, (200,200,120)), (10, 40))
     pygame.display.flip()
-    clock.tick(30)
+    clock.tick(240)
 
 pygame.quit()
 sock.close()
-

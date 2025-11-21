@@ -1,3 +1,4 @@
+#include<Servo.h>
 // Define Pins here
 
 // Right side is A channel and left is B
@@ -9,6 +10,12 @@
 #define ENA D1
 #define ENB D2
 
+#define ELEVATION_SERVO D4
+#define GRIP_SERVO D3
+
+Servo elevation_servo;
+Servo grip_servo;
+
 void initialize_bot() {
   pinMode(MIN1, OUTPUT);
   pinMode(MIN2, OUTPUT);
@@ -17,6 +24,9 @@ void initialize_bot() {
 
   pinMode(ENA, OUTPUT);
   pinMode(ENA, OUTPUT);
+
+  elevation_servo.attach(ELEVATION_SERVO);
+  grip_servo.attach(GRIP_SERVO);
 }
 
 void handle_packet(ControlData* packet) {
@@ -30,11 +40,11 @@ void handle_packet(ControlData* packet) {
   int rightSpeed = forward - turn;
 
   // Scale by speed factor (0-255)
-  leftSpeed = (leftSpeed * speedFactor) / 128;  // 128 = max value of signed byte
-  rightSpeed = (rightSpeed * speedFactor) / 128;
+  leftSpeed = (leftSpeed * speedFactor) / 127;  // 128 = max value of signed byte
+  rightSpeed = (rightSpeed * speedFactor) / 127;
 
-  int pwmValueL = abs(leftSpeed);
-  int pwmValueR = abs(rightSpeed); 
+  int pwmValueL = constrain(abs(leftSpeed), 0, 255);
+  int pwmValueR = constrain(abs(rightSpeed), 0, 255);
 
   int mask_GPOC = 0;
   int mask_GPOS = 0;
@@ -55,12 +65,22 @@ void handle_packet(ControlData* packet) {
     mask_GPOC |= (1 << MIN3);
   }
 
-  Serial.printf("left : %d; right speed: %d", leftSpeed, rightSpeed);
+  Serial.printf("left : %d; right speed: %d", pwmValueL, pwmValueR);
 
   GPOC = mask_GPOC;
   GPOS = mask_GPOS;
   analogWrite(ENA, pwmValueR);
   analogWrite(ENB, pwmValueL);
+
+  if (packet->elevation <= 180)
+  {
+    elevation_servo.write(packet->elevation);
+  }
+  
+  if (packet->grip <= 180) 
+  {
+    grip_servo.write(packet->grip);
+  }
 
   delay(10);
 }

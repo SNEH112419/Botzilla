@@ -48,10 +48,9 @@ void loop()
   {
     // receive incoming UDP packets
     Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-    int len = Udp.read(incomingPacket.buffer, 5);
+    int len = Udp.read(incomingPacket.buffer, sizeof(ControlPacket));
     if (len > 0 && validate_packet(&incomingPacket))
     {
-      // incommingPacket.buffer[4] = '\0'
       handle_packet(&incomingPacket.data);
     }
     Serial.printf("UDP packet contents: %s\n", incomingPacket.buffer);
@@ -63,7 +62,10 @@ void loop()
 }
 
 bool validate_packet(ControlPacket* p) {
-  int sum = p->data.forward + p->data.turn + p->data.speed + p->data.flags;
+  int sum = 0;
+  for (int i = 0; i < sizeof(ControlData); i++) {
+    sum += p->buffer[i];
+  }
   return (sum & 0xFF) == p->data.checksum;
 }
 
