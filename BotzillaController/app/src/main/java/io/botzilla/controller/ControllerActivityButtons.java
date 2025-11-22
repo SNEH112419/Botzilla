@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -35,20 +33,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
     private Thread controlThread;
     private ControlPacket dataPacket;
 
-
-
     // UI elements
-    Switch servoSyncSwitch;
     SeekBar elevation_seek;
-    SeekBar seek_grip_l;
-    SeekBar right_grip;
-    TextView left_seek_text;
-    TextView right_seek_text;
+    SeekBar grip_seek;
 
-
-
-    int left_grip_val;
-    int right_grip_val;
+    int grip_val;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,21 +123,15 @@ public class ControllerActivityButtons extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 dataPacket.speed = (byte) (progress & 0xFF);
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        servoSyncSwitch = findViewById(R.id.servoSyncSwitch);
 
         elevation_seek = findViewById(R.id.elevation_seek);
-        seek_grip_l = findViewById(R.id.grip_seek);
-        right_grip = findViewById(R.id.grip_seek_2_hidden);
-
-        left_seek_text = findViewById(R.id.gripper_seek_textView);
-        right_seek_text = findViewById(R.id.gripper_seek_textView_r);
+        grip_seek = findViewById(R.id.grip_seek);
 
         elevation_seek.setMax(120);
         elevation_seek.setProgress(0);
@@ -163,31 +146,12 @@ public class ControllerActivityButtons extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        servoSyncSwitch.setOnCheckedChangeListener((compoundButton, isChecked) -> {
-            updateUI(isChecked);
-        });
-
-        seek_grip_l.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        grip_seek.setMax(180);
+        grip_seek.setProgress(0);
+        grip_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (servoSyncSwitch.isChecked()) {
-                    left_grip_val = progress;
-                    right_grip_val = 180 - progress;
-                }
-                else {
-                    left_grip_val = progress;
-                }
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { }
-        });
-
-        right_grip.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                right_grip_val = 180 - progress;
+                grip_val = progress;
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) { }
@@ -196,19 +160,6 @@ public class ControllerActivityButtons extends AppCompatActivity {
         });
 
         startControlLoop();
-    }
-
-    void updateUI(boolean syncServos) {
-        if (syncServos) {
-            left_seek_text.setText("Grip");
-            right_seek_text.setVisibility(View.INVISIBLE);
-            right_grip.setVisibility(View.INVISIBLE);
-        }
-        else {
-            left_seek_text.setText("Left");
-            right_seek_text.setVisibility(View.VISIBLE);
-            right_grip.setVisibility(View.VISIBLE);
-        }
     }
 
     private void startControlLoop() {
@@ -226,8 +177,7 @@ public class ControllerActivityButtons extends AppCompatActivity {
     }
 
     private void sendControlPacket() {
-        dataPacket.left = (byte) (left_grip_val & 0xFF);
-        dataPacket.right = (byte) (right_grip_val& 0xFF);
+        dataPacket.grip = (byte) (grip_val & 0xFF);
 
         byte[] buffer = dataPacket.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);

@@ -35,6 +35,10 @@ public class ControllerActivityJoystick extends AppCompatActivity {
 
     private ControlPacket dataPacket;
 
+    SeekBar elevation_seek;
+    SeekBar grip_seek;
+
+    int grip_val;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,6 +85,35 @@ public class ControllerActivityJoystick extends AppCompatActivity {
             }
         });
 
+        elevation_seek = findViewById(R.id.elevation_seek);
+        grip_seek = findViewById(R.id.grip_seek);
+
+        elevation_seek.setMax(120);
+        elevation_seek.setProgress(0);
+        elevation_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.elevation = (byte) (progress & 0xFF);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        grip_seek.setMax(180);
+        grip_seek.setProgress(0);
+        grip_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                grip_val = progress;
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
+
         startControlLoop();
     }
 
@@ -104,6 +137,7 @@ public class ControllerActivityJoystick extends AppCompatActivity {
         byte turn = (byte) (127 * pos.getX());
         dataPacket.forward = forward;
         dataPacket.turn = turn;
+        dataPacket.grip = (byte) (grip_val & 0xFF);
         byte[] buffer = dataPacket.getBytes();
 
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);

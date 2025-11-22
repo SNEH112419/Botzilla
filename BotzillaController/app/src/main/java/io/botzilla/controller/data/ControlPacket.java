@@ -7,8 +7,7 @@ public class ControlPacket {
     public byte flags = 0x0; // unsigned
     // byte checksum; // and all and
     public byte elevation = 0; // control of servo in the front
-    public byte right = 0; // control right finger
-    public byte left = 0; // control left finger
+    public byte grip = 0; // control grip finger
 
     public ControlPacket(byte forward, byte turn, int speed, byte flags) {
         this.forward = forward;
@@ -21,9 +20,9 @@ public class ControlPacket {
 
     public byte[] getBytes() {
         // If you want a checksum:
-        byte checksum = (byte) ((forward + turn + speed + flags + elevation + left + right) & 0xFF);
+        byte checksum = (byte) ((forward + turn + speed + flags + elevation + grip) & 0xFF);
 
         // Return a byte array: forward, turn, speed, flags, checksum
-        return new byte[]{forward, turn, speed, flags, elevation, left, right, checksum};
+        return new byte[]{forward, turn, speed, flags, elevation, grip, checksum};
     }
 }
