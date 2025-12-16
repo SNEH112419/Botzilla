@@ -1,7 +1,11 @@
 package io.botzilla.controller;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.Button;
@@ -29,9 +33,16 @@ public class ControllerActivityButtons extends AppCompatActivity {
     private DatagramSocket udpSocket;
     private InetAddress botzillaIP;
     private volatile boolean running = true;
+    private volatile int vibration_request_tracker = 0;
+    // 1st for forward button
+    // 2nd for back button
+    // 3rd for left button
+    // 4th for right button
+    // opt. 5th for elevation button
 
     private Thread controlThread;
     private ControlPacket dataPacket;
+    private Vibrator vibrator;
 
     // UI elements
     SeekBar elevation_seek;
@@ -61,17 +72,19 @@ public class ControllerActivityButtons extends AppCompatActivity {
         }
 
         dataPacket = new ControlPacket((byte) 0, (byte) 0, (byte) 0xFF, (byte) 0);
-
-        Log.d(TAG, "onTouch: Released F");
+        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         Button forward = findViewById(R.id.button_forward);
         forward.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = 127;
+                    vibration_request_tracker |= 1;
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
+                    vibration_request_tracker &= ~1;
+                    return true;
             }
             return false;
         });
@@ -81,9 +94,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.forward = -127;
+                    vibration_request_tracker |= (1<<1);
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.forward = 0;
+                    vibration_request_tracker &= ~(1<<1);
                     return true;
             }
             return false;
@@ -94,9 +109,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = 127;
+                    vibration_request_tracker |= (1<<3);
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
+                    vibration_request_tracker &= ~(1<<3);
                     return true;
             }
             return false;
@@ -107,9 +124,11 @@ public class ControllerActivityButtons extends AppCompatActivity {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
                     dataPacket.turn = -127;
+                    vibration_request_tracker |= (1<<2);
                     return true;
                 case MotionEvent.ACTION_UP:
                     dataPacket.turn = 0;
+                    vibration_request_tracker &= ~(1<<2);
                     return true;
             }
             return false;
@@ -167,6 +186,7 @@ public class ControllerActivityButtons extends AppCompatActivity {
             try {
                 while (running) {
                     sendControlPacket();
+                    control_vibration();
                     Thread.sleep(1000/120);
                 }
             } catch (InterruptedException e) {
@@ -187,6 +207,45 @@ public class ControllerActivityButtons extends AppCompatActivity {
             Log.e(TAG, "UDP send failed", e);
         }
     }
+
+    private int prev_vibration_tracker = 0;
+    private boolean isVibrating = false;
+    private void control_vibration() {
+        if (prev_vibration_tracker == 0 && vibration_request_tracker != 0) {
+            Log.d(TAG, "control_vibration: Trying Vibration");
+            startVibration();
+        }
+        if (prev_vibration_tracker != 0 && vibration_request_tracker == 0) {
+            Log.d(TAG, "control_vibration: Stopping Vibration");
+            stopVibration();
+        }
+        prev_vibration_tracker = vibration_request_tracker;
+    }
+
+    private void startVibration() {
+        Log.d(TAG, "startVibration: Trying to vibrate");
+        if (vibrator == null || isVibrating) return;
+
+        long[] pattern = {0, 20, 15}; // engine idle feel
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(
+                    VibrationEffect.createWaveform(pattern, 0)
+            );
+        } else {
+            vibrator.vibrate(pattern, 0);
+        }
+
+        isVibrating = true;
+        Log.d(TAG, "startVibration: At the end of function");
+    }
+
+    private void stopVibration() {
+        if (vibrator == null || !isVibrating) return;
+        vibrator.cancel();
+        isVibrating = false;
+    }
+
 
     @Override
     protected void onDestroy() {

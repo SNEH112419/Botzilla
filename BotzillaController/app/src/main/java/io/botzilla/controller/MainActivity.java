@@ -1,7 +1,13 @@
 package io.botzilla.controller;
 
+import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -30,6 +36,12 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.VIBRATE}, 101);
+            }
+        }
+
 
         this.ipTextEdit = findViewById(R.id.ipTextEdit);
 
@@ -40,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
 
         Button startB = findViewById(R.id.startButtonButtons);
         startB.setOnClickListener(v -> {
+            Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vib.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vib.vibrate(100);
+            }
             startControllingActivity(ControllerActivityButtons.class);
         });
     }
