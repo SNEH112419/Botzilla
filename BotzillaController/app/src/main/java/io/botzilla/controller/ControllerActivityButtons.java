@@ -198,6 +198,12 @@ public class ControllerActivityButtons extends AppCompatActivity {
 
     private void sendControlPacket() {
         dataPacket.grip = (byte) (grip_val & 0xFF);
+        if (vibration_request_tracker == 0) {
+            dataPacket.flags |= 1;
+        }
+        else {
+            dataPacket.flags &= ~1;
+        }
 
         byte[] buffer = dataPacket.getBytes();
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length, botzillaIP, 4210);
