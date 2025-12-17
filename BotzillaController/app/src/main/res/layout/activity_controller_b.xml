@@ -125,7 +125,8 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginBottom="15dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -134,21 +135,21 @@
             android:id="@+id/button_back"
             android:layout_width="60dp"
             android:layout_height="130dp"
-            android:layout_margin="10dp"
+            android:layout_margin="15dp"
+            android:backgroundTint="@color/material_dynamic_primary70"
             app:icon="@drawable/outline_arrow_down_24"
             app:iconGravity="top"
-            app:iconSize="40dp"
-            android:backgroundTint="@color/material_dynamic_primary70" />
+            app:iconSize="40dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_forward"
             android:layout_width="60dp"
             android:layout_height="130dp"
-            android:layout_margin="10dp"
+            android:layout_margin="15dp"
+            android:backgroundTint="@color/material_dynamic_primary70"
             app:icon="@drawable/outline_arrow_up_24"
             app:iconGravity="top"
-            app:iconSize="40dp"
-            android:backgroundTint="@color/material_dynamic_primary70"/>
+            app:iconSize="40dp" />
 
     </LinearLayout>
 
