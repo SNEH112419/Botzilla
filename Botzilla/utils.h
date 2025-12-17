@@ -1,16 +1,18 @@
+#pragma once
 #include <cstdint>
 
-typedef struct ControlData {
+typedef struct {
     int8_t forward;
     int8_t turn;
     uint8_t speed;
     uint8_t flags;
+    // 1st bit for brake
     uint8_t elevation;
     uint8_t grip;
     uint8_t checksum;
 } ControlData;
 
-typedef union ControlPacket {
+typedef union {
     ControlData data;
     char buffer[sizeof(ControlData)];
 } ControlPacket;
