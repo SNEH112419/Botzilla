@@ -47,8 +47,8 @@
         android:layout_height="30dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="20dp"
-        android:progress="255"
         android:max="255"
+        android:progress="255"
         android:progressTint="@color/material_dynamic_primary60"
         android:thumbTint="@color/material_dynamic_primary60"
         app:layout_constraintEnd_toEndOf="parent"
@@ -106,26 +106,26 @@
             android:layout_width="130dp"
             android:layout_height="60dp"
             android:layout_margin="10dp"
+            android:backgroundTint="@color/material_dynamic_primary70"
             app:icon="@drawable/outline_arrow_left_24"
             app:iconGravity="start"
-            app:iconSize="40dp"
-            android:backgroundTint="@color/material_dynamic_primary70"/>
+            app:iconSize="40dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_right"
             android:layout_width="130dp"
             android:layout_height="60dp"
             android:layout_margin="10dp"
+            android:backgroundTint="@color/material_dynamic_primary70"
             app:icon="@drawable/outline_arrow_right_24"
             app:iconGravity="end"
-            app:iconSize="40dp"
-            android:backgroundTint="@color/material_dynamic_primary70"/>
+            app:iconSize="40dp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="50dp"
+        android:layout_marginEnd="35dp"
         android:layout_marginBottom="15dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
