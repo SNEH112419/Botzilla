@@ -165,7 +165,7 @@ public class ControllerActivityButtons extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        grip_seek.setMax(180);
+        grip_seek.setMax(135);
         grip_seek.setProgress(0);
         grip_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
