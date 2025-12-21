@@ -27,6 +27,8 @@ void initialize_bot() {
 
   elevation_servo.attach(ELEVATION_SERVO, 500, 2000);
   grip_servo.attach(GRIP_SERVO, 500, 2000);
+  grip_servo.write(0);
+  elevation_servo.write(0);
 }
 
 void handle_packet(ControlData* packet) {
