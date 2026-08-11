@@ -2,8 +2,9 @@
 #include <WiFiUdp.h>
 #include "utils.h"
 
-const char* ssid = "Sugat 5G";
-const char* password = "Sugat.dev";
+const char* ssid = "botzilla-ap";
+const char* password = "botzilla rocks";
+const char* hostname = "botzilla-mcu";
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
@@ -18,8 +19,10 @@ void setup()
   Serial.begin(115200);
   Serial.println();
 
+  WiFi.mode(WIFI_STA);
+
   Serial.printf("Connecting to %s ", ssid);
-  WiFi.hostname("Botzilla MCU");
+  WiFi.hostname(hostname);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {

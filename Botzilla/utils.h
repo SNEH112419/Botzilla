@@ -10,10 +10,10 @@ typedef struct {
     uint8_t elevation;
     uint8_t grip;
     uint8_t checksum;
-} ControlData;
+} __attribute__((__packed__)) ControlData;
 
 typedef union {
     ControlData data;
-    char buffer[sizeof(ControlData)];
+    uint8_t buffer[sizeof(ControlData)];
 } ControlPacket;
 
