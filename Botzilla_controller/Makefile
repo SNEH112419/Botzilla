@@ -18,7 +18,7 @@ compile:
 	arduino-cli compile --fqbn $(FQBN) .
 
 upload:
-	arduino-cli upload -p $(PORT) --fqbn $(FQBN) --additional-urls $(BOARD_URL) .
+	arduino-cli upload -p $(PORT) --fqbn $(FQBN) --additional-urls $(BOARD_URL) --upload-property "upload.speed=115200" .
 
 tty:
 	arduino-cli monitor -p $(PORT) -b $(FQBN) -c baudrate=$(BAUD)

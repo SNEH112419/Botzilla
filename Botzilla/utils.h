@@ -1,6 +1,9 @@
 #pragma once
 #include <cstdint>
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 typedef struct {
     int8_t forward;
     int8_t turn;

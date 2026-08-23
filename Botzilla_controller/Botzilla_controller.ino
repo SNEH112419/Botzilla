@@ -2,6 +2,10 @@
 #define USE_JOYSTICK
 // #define USE_BUTTONS
 
+#define BOTZILLA_WIFI_CHANNEL 1
+// #define BOTZILLA_WIFI_CHANNEL 6
+// #define BOTZILLA_WIFI_CHANNEL 11
+
 // --- Compile-Time Guard ---
 #if defined(USE_JOYSTICK) && defined(USE_BUTTONS)
   #error "Configuration Error: Both USE_JOYSTICK and USE_BUTTONS are defined!"
@@ -23,8 +27,8 @@
 
 #include "../Botzilla/utils.h"
 
-const char *ssid = "botzilla-ap";
-const char *password = "botzilla rocks";
+const char* ssid = "botzilla-ap-c" STR(BOTZILLA_WIFI_CHANNEL);
+const char* password = "botzilla rocks";
 
 #define FORWARD_BTN 4
 #define BACK_BTN    5
@@ -33,7 +37,7 @@ const char *password = "botzilla rocks";
 
 #define JOY_X_PIN 34  // Controls turn (Left / Right)
 #define JOY_Y_PIN 35  // Controls forward (Forward / Back)
-#define DEADZONE  15
+#define DEADZONE  20
 
 // UDP Configuration
 WiFiUDP udp;
@@ -70,7 +74,7 @@ void setup() {
   // Set the LED pin as an output
   pinMode(LED_BUILTIN, OUTPUT);
 
-  if (WiFi.softAP(ssid, password)) {
+  if (WiFi.softAP(ssid, password, BOTZILLA_WIFI_CHANNEL)) {
     Serial.println("Access Point successfully started!");
   } else {
     Serial.println("Failed to start Access Point.");
@@ -107,13 +111,15 @@ void create_packet() {
     packet.data.turn -= 127;
   }
 #elif defined(USE_JOYSTICK)
-  int turnVal    = map(analogRead(JOY_X_PIN), 0, 4095, -127, 127);
-  int forwardVal = map(analogRead(JOY_Y_PIN), 0, 4095, -127, 127);
+  int turnVal    = map(analogRead(JOY_X_PIN), 0, 4095, 127, -127);
+  int forwardVal = map(analogRead(JOY_Y_PIN), 0, 4095, 127, -127);
 
   packet.data.turn    = (abs(turnVal) < DEADZONE) ? 0 : (int8_t)turnVal;
   packet.data.forward = (abs(forwardVal) < DEADZONE) ? 0 : (int8_t)forwardVal;
 #endif
 
+  packet.data.flags   = packet.data.turn == 0 && packet.data.forward == 0; 
+                    // If no movement then break
   packet.data.speed = 0xFF;
   
   int sum = 0;

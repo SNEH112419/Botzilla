@@ -1,10 +1,19 @@
+// Uncomment one
+#define BOTZILLA_WIFI_CHANNEL 1
+// #define BOTZILLA_WIFI_CHANNEL 6
+// #define BOTZILLA_WIFI_CHANNEL 11
+
+#ifndef BOTZILLA_WIFI_CHANNEL 
+#error "Please uncomment one of the channel"
+#endif
+
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include "utils.h"
 
-const char* ssid = "botzilla-ap";
+const char* ssid = "botzilla-ap-c" STR(BOTZILLA_WIFI_CHANNEL);
 const char* password = "botzilla rocks";
-const char* hostname = "botzilla-mcu";
+const char* hostname = "botzilla-mcu-c" STR(BOTZILLA_WIFI_CHANNEL);
 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;  // local port to listen on
