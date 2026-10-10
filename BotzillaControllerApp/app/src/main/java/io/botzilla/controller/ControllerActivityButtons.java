@@ -45,10 +45,10 @@ public class ControllerActivityButtons extends AppCompatActivity {
     private Vibrator vibrator;
 
     // UI elements
-    SeekBar elevation_seek;
-    SeekBar grip_seek;
+    SeekBar base_rot_seek;
+    SeekBar grip_rot_seek;
+    SeekBar grip_seek, lj_seek, elb_seek, bj_seek;
 
-    int grip_val;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,18 +71,21 @@ public class ControllerActivityButtons extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
-        dataPacket = new ControlPacket((byte) 0, (byte) 0, (byte) 0xFF, (byte) 0);
+        dataPacket = new ControlPacket(0xFF, (byte) 0);
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
         Button forward = findViewById(R.id.button_forward);
         forward.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    dataPacket.forward = 127;
+                    // set fprward and reset back
+                    dataPacket.flags &= ~(1 << 1);
+                    dataPacket.flags |= 1;
                     vibration_request_tracker |= 1;
                     return true;
                 case MotionEvent.ACTION_UP:
-                    dataPacket.forward = 0;
+                    // reset both forward and backworkd
+                    dataPacket.flags &= ~(1 & (1 << 1));
                     vibration_request_tracker &= ~1;
                     return true;
             }
@@ -92,12 +95,13 @@ public class ControllerActivityButtons extends AppCompatActivity {
         Button back = findViewById(R.id.button_back);
         back.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    dataPacket.forward = -127;
+                case MotionEvent.ACTION_DOWN:dataPacket.flags |= 1;
+                    dataPacket.flags &= ~(1);
+                    dataPacket.flags |= (1 << 1);
                     vibration_request_tracker |= (1<<1);
                     return true;
                 case MotionEvent.ACTION_UP:
-                    dataPacket.forward = 0;
+                    dataPacket.flags &= ~(1 & (1 << 1));
                     vibration_request_tracker &= ~(1<<1);
                     return true;
             }
@@ -108,12 +112,13 @@ public class ControllerActivityButtons extends AppCompatActivity {
         right.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    dataPacket.turn = 127;
-                    vibration_request_tracker |= (1<<3);
+                    dataPacket.flags &= ~(1 << 2);
+                    dataPacket.flags |= (1 << 3);
+                    vibration_request_tracker |= (1<<2);
                     return true;
                 case MotionEvent.ACTION_UP:
-                    dataPacket.turn = 0;
-                    vibration_request_tracker &= ~(1<<3);
+                    dataPacket.flags &= ~((1 << 2) & (1 << 3));
+                    vibration_request_tracker &= ~(1<<2);
                     return true;
             }
             return false;
@@ -123,11 +128,12 @@ public class ControllerActivityButtons extends AppCompatActivity {
         left.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
                 case MotionEvent.ACTION_DOWN:
-                    dataPacket.turn = -127;
+                    dataPacket.flags &= ~(1 << 3);
+                    dataPacket.flags |= (1 << 2);
                     vibration_request_tracker |= (1<<2);
                     return true;
                 case MotionEvent.ACTION_UP:
-                    dataPacket.turn = 0;
+                    dataPacket.flags &= ~((1 << 2) & (1 << 3));
                     vibration_request_tracker &= ~(1<<2);
                     return true;
             }
@@ -149,15 +155,13 @@ public class ControllerActivityButtons extends AppCompatActivity {
         });
 
 
-        elevation_seek = findViewById(R.id.elevation_seek);
-        grip_seek = findViewById(R.id.grip_seek);
-
-        elevation_seek.setMax(120);
-        elevation_seek.setProgress(0);
-        elevation_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        base_rot_seek = findViewById(R.id.base_rot_seek);
+        base_rot_seek.setMax(180);
+        base_rot_seek.setProgress(90);
+        base_rot_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                dataPacket.elevation = (byte) (progress & 0xFF);
+                dataPacket.servos[ControlPacket.BASE_ROTATION_SERVO] = (byte) (progress & 0xFF);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -165,17 +169,77 @@ public class ControllerActivityButtons extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
-        grip_seek.setMax(135);
+        grip_seek = findViewById(R.id.grip_seek);
+        grip_seek.setMax(45);
         grip_seek.setProgress(0);
         grip_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                grip_val = progress;
+                dataPacket.servos[ControlPacket.GRIP_SERVO_INDEX] =(byte) (progress & 0xFF);
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) { }
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
+
+        grip_rot_seek = findViewById(R.id.grip_rot_seek);
+        grip_rot_seek.setMax(180);
+        grip_rot_seek.setProgress(90);
+        grip_rot_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.servos[ControlPacket.GRIP_ROT_SERVO] = (byte) (progress & 0xFF);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { }
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { }
+        });
+
+        bj_seek = findViewById(R.id.arm_bj_seek);
+        bj_seek.setMax(180);
+        bj_seek.setProgress(0);
+        bj_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.servos[ControlPacket.ARM_BJ_SERVO] = (byte) (progress & 0xFF);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        elb_seek = findViewById(R.id.arm_elb_seek);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            elb_seek.setMin(10);
+        }
+        elb_seek.setMax(180);
+        elb_seek.setProgress(10);
+        elb_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.servos[ControlPacket.ARM_ELB_SERVO] = (byte) (progress & 0xFF);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
+        });
+
+        lj_seek = findViewById(R.id.arm_lj_seek);
+        lj_seek.setMax(90);
+        lj_seek.setProgress(0);
+        lj_seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                dataPacket.servos[ControlPacket.ARM_LJ_SERVO] = (byte) (progress & 0xFF);
+            }
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {}
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
         startControlLoop();
@@ -187,7 +251,7 @@ public class ControllerActivityButtons extends AppCompatActivity {
                 while (running) {
                     sendControlPacket();
                     control_vibration();
-                    Thread.sleep(1000/120);
+                    Thread.sleep(1000/50);
                 }
             } catch (InterruptedException e) {
                 Log.e(TAG, "Control thread interrupted", e);
@@ -197,12 +261,8 @@ public class ControllerActivityButtons extends AppCompatActivity {
     }
 
     private void sendControlPacket() {
-        dataPacket.grip = (byte) (grip_val & 0xFF);
         if (vibration_request_tracker == 0) {
-            dataPacket.flags |= 1;
-        }
-        else {
-            dataPacket.flags &= ~1;
+            dataPacket.speed = (byte) 0;
         }
 
         byte[] buffer = dataPacket.getBytes();
@@ -251,7 +311,6 @@ public class ControllerActivityButtons extends AppCompatActivity {
         vibrator.cancel();
         isVibrating = false;
     }
-
 
     @Override
     protected void onDestroy() {

@@ -24,10 +24,10 @@
         android:id="@+id/ipTextViewB3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Elevation"
+        android:text="BR"
         android:textSize="20sp"
-        app:layout_constraintStart_toEndOf="@+id/elevation_seek"
-        app:layout_constraintTop_toTopOf="@+id/elevation_seek"
+        app:layout_constraintStart_toEndOf="@+id/base_rot_seek"
+        app:layout_constraintTop_toTopOf="@+id/base_rot_seek"
         tools:ignore="HardcodedText" />
 
     <TextView
@@ -39,6 +39,18 @@
         app:layout_constraintBottom_toBottomOf="@+id/grip_seek"
         app:layout_constraintStart_toEndOf="@+id/grip_seek"
         app:layout_constraintTop_toTopOf="@+id/grip_seek"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/gripper_seek_textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GR"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@+id/grip_rot_seek"
+        app:layout_constraintStart_toEndOf="@+id/grip_rot_seek"
+        app:layout_constraintTop_toTopOf="@+id/grip_rot_seek"
+        app:layout_constraintVertical_bias="1.0"
         tools:ignore="HardcodedText" />
 
     <SeekBar
@@ -54,31 +66,118 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <SeekBar
-        android:id="@+id/elevation_seek"
+        android:id="@+id/base_rot_seek"
         android:layout_width="270dp"
         android:layout_height="30dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="40dp"
-        android:max="90"
-        android:progress="0"
+        android:max="180"
+        android:progress="90"
         android:progressTint="@color/material_dynamic_primary60"
         android:thumbTint="@color/material_dynamic_primary60"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ipTextViewB" />
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+        app:layout_constraintStart_toStartOf="@+id/grip_rot_seek" />
+
+    <SeekBar
+        android:id="@+id/grip_rot_seek"
+        android:layout_width="270dp"
+        android:layout_height="30dp"
+        android:max="180"
+        android:progress="90"
+        android:progressTint="@color/material_dynamic_primary60"
+        android:thumbTint="@color/material_dynamic_primary60"
+        app:layout_constraintStart_toStartOf="@+id/grip_seek"
+
+        app:layout_constraintTop_toBottomOf="@+id/grip_seek" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@+id/base_rot_seek"
+        app:layout_constraintStart_toStartOf="@+id/grip_seek"
+        app:layout_constraintTop_toBottomOf="@+id/grip_rot_seek">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <SeekBar
+                android:id="@+id/arm_lj_seek"
+                android:layout_width="270dp"
+                android:layout_height="30dp"
+                android:max="90"
+                android:progress="0"
+                android:progressTint="@color/material_dynamic_primary60"
+                android:thumbTint="@color/material_dynamic_primary60" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LJ"
+                android:textSize="20sp"
+                app:layout_constraintVertical_bias="1.0"
+                tools:ignore="HardcodedText" />
+
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <SeekBar
+                android:id="@+id/arm_elb_seek"
+                android:layout_width="270dp"
+                android:layout_height="30dp"
+                android:max="180"
+                android:progress="0"
+                android:progressTint="@color/material_dynamic_primary60"
+                android:thumbTint="@color/material_dynamic_primary60" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Elb"
+                android:textSize="20sp"
+                app:layout_constraintVertical_bias="1.0"
+                tools:ignore="HardcodedText" />
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <SeekBar
+            android:id="@+id/arm_bj_seek"
+            android:layout_width="270dp"
+            android:layout_height="30dp"
+            android:max="180"
+            android:progress="0"
+            android:progressTint="@color/material_dynamic_primary60"
+            android:thumbTint="@color/material_dynamic_primary60" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BJ"
+            android:textSize="20sp"
+            app:layout_constraintVertical_bias="1.0"
+            tools:ignore="HardcodedText" />
+    </LinearLayout>
+    </LinearLayout>
+
 
     <SeekBar
         android:id="@+id/grip_seek"
         android:layout_width="270dp"
         android:layout_height="30dp"
         android:layout_marginStart="40dp"
-        android:layout_marginTop="5dp"
-        android:max="135"
+        android:layout_marginTop="12dp"
+        android:max="40"
         android:progress="0"
         android:progressTint="@color/material_dynamic_primary60"
         android:thumbTint="@color/material_dynamic_primary60"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/elevation_seek" />
+        app:layout_constraintTop_toBottomOf="@+id/ipTextViewB" />
 
     <TextView
         android:id="@+id/textView"
@@ -93,6 +192,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"

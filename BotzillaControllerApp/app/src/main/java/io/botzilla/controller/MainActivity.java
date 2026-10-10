@@ -45,12 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
         this.ipTextEdit = findViewById(R.id.ipTextEdit);
 
-        Button startJ = findViewById(R.id.startButtonJoystick);
-        startJ.setOnClickListener(v -> {
-            startControllingActivity(ControllerActivityJoystick.class);
-        });
-
-        Button startB = findViewById(R.id.startButtonButtons);
+        Button startB = findViewById(R.id.startButton);
         startB.setOnClickListener(v -> {
             Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
